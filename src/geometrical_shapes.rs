@@ -24,11 +24,26 @@ impl Rectangle {
     pub fn random(width: i32, height: i32) -> Self {
         Rectangle::new(&Point::random(width, height), &Point::random(width, height))
     }
+
+    fn other_point(&self, top_left: &Point, bottom_right: &Point) -> (Point, Point){
+        let top_right = Point(bottom_right.0, top_left.1);
+        let bottom_left = Point(top_left.0, bottom_right.1);
+        (top_right, bottom_left)
+    }
 }
 
 impl Drawable for Rectangle {
     fn draw(&self, image: &mut Image) {
-        // image.set_pixel(self.0, y, color)
+        let (top_right, bottom_left) = self.other_point(&self.0, &self.1);
+        // let color = self.color();
+        let mut line = Line::new(&self.0, &top_right);
+        line.draw(image);
+        line = Line::new(&self.0, &bottom_left);
+        line.draw(image);
+        line = Line::new(&top_right, &self.1);
+        line.draw(image);
+        line = Line::new(&bottom_left, &self.1);
+        line.draw(image);
     }
 
     fn color(&self) -> Color {
@@ -56,10 +71,33 @@ impl Point {
     }
 }
 
+
+impl Drawable for Point {
+    fn draw(&self, image: &mut Image) {
+        image.set_pixel(self.0, self.1, self.color()).unwrap();
+    }
+
+    fn color(&self) -> Color {
+        //todo implement the function
+        let mut rng = rand::thread_rng();
+        let range = Uniform::from(0..255);
+
+        Color::rgb(rng.sample(range), rng.sample(range), rng.sample(range))
+    }
+}
+
+impl Line {
+    pub fn new(p1: &Point, p2: &Point) -> Self {
+        Line(Point(p1.0, p1.1), Point(p2.0, p2.1))
+    }
+
+    pub fn random(width: i32, height: i32) -> Self {
+        Line::new(&Point::random(width, height), &Point::random(width, height))
+    }
+}
+
 impl Drawable for Line {
     fn draw(&self, image: &mut Image) {
-
-
         let Point(x1, y1) = self.0;
         let Point(x2, y2) = self.1;
 
@@ -72,11 +110,13 @@ impl Drawable for Line {
         let mut current_x = x1;
         let mut current_y = y1;
 
+        let color = &self.color();
+
         loop {
             if current_x >= 0 && current_x < image.width 
                 && current_y >= 0 && current_y < image.height 
             {
-                image.set_pixel(current_x , current_y, self.color()).unwrap();
+                image.set_pixel(current_x , current_y, color.clone()).unwrap();
             }
 
             if current_x == x2 && current_y == y2 {
@@ -100,30 +140,7 @@ impl Drawable for Line {
         let mut rng = rand::thread_rng();
         let range = Uniform::from(0..=255);
 
-        // Color::rgb(rng.sample(range), rng.sample(range), rng.sample(range))
-        Color::blue()
-    }
-}
-
-impl Drawable for Point {
-    fn draw(&self, image: &mut Image) {
-        image.set_pixel(self.0, self.1, self.color()).unwrap();
-    }
-
-    fn color(&self) -> Color {
-        //todo implement the function
-        let mut rng = rand::thread_rng();
-        let range = Uniform::from(0..255);
-
         Color::rgb(rng.sample(range), rng.sample(range), rng.sample(range))
     }
 }
-impl Line {
-    pub fn new(p1: &Point, p2: &Point) -> Self {
-        Line(Point(p1.0, p1.1), Point(p2.0, p2.1))
-    }
 
-    pub fn random(width: i32, height: i32) -> Self {
-        Line::new(&Point::random(width, height), &Point::random(width, height))
-    }
-}

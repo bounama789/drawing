@@ -23,11 +23,11 @@ fn main() {
     // );
     // triangle.draw(&mut image);
 
-    for _ in 1..50 {
+    for _ in 1..3 {
         gs::Circle::random(image.width, image.height).draw(&mut image);
     }
 
-    raster::save(&image, "helolo.png");
+    raster::save(&image, "image.png");
 }
 
 // impl Displayable for Image {

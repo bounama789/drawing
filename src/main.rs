@@ -11,10 +11,14 @@ fn main() {
 
     gs::Point::random(image.width, image.height).draw(&mut image);
 
-    let rectangle = gs::Rectangle::new(&gs::Point::new(150, 150), &gs::Point::new(50, 50));
-    rectangle.draw(&mut image);
+    // let rectangle = gs::Rectangle::new(&gs::Point::new(150, 150), &gs::Point::new(50, 50));
+    // rectangle.draw(&mut image);
+
+    // let rectangle = gs::Rectangle::new(&gs::Point::new(150, 950), &gs::Point::new(50, 1030));
+    // rectangle.draw(&mut image);
 
     gs::Rectangle::random(image.width, image.height).draw(&mut image);
+    gs::Cube::random(image.width, image.height).draw(&mut image);
 
     // let triangle = gs::Triangle::new (
     //         &gs::Point::new(500, 500),
@@ -30,10 +34,10 @@ fn main() {
     raster::save(&image, "image.png");
 }
 
-// impl Displayable for Image {
-//     fn display(&mut self, x: i32, y: i32, color: Color) {
-//         if x >= 0 && x < self.width && y >= 0 && y < self.height {
-//             self.set_pixel(x, y, color).unwrap();
-//         }
-//     }
-// }
+impl Displayable for Image {
+    fn display(&mut self, x: i32, y: i32, color: Color) {
+        if x >= 0 && x < self.width && y >= 0 && y < self.height {
+            self.set_pixel(x, y, color).unwrap();
+        }
+    }
+}

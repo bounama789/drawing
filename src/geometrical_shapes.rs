@@ -1,4 +1,6 @@
-use rand::{distributions::Uniform, random, Rng};
+use std::ops::Div;
+
+use rand::{distributions::Uniform, Rng};
 use raster::{Color, Image};
 
 pub struct Point(i32, i32, Option<Color>);
@@ -6,6 +8,8 @@ pub struct Triangle(Point, Point, Point, Option<Color>);
 pub struct Line(Point, Point, Option<Color>);
 pub struct Rectangle(Point, Point, Option<Color>);
 pub struct Circle(Point, i32, Option<Color>);
+
+pub struct Cube(Point,Point,Option<Color>);
 
 pub trait Displayable {
     fn display(&mut self, x: i32, y: i32, color: Color);
@@ -78,6 +82,11 @@ impl Point {
 
         // generate random value
         Point::new(rng.sample(range_x), rng.sample(range_y))
+    }
+
+    pub fn distance(&self, point: &Point) -> f64 {
+        let (dx, dy) = ((point.0 - self.0)as f64, (point.1 - self.1)as f64);
+        (dx * dx + dy * dy).sqrt()
     }
 }
 
@@ -229,6 +238,72 @@ impl Circle {
         // generate random value
        let center =  Point::new(rng.sample(range_x), rng.sample(range_y));
        let radius = rng.sample(Uniform::from(0..width.min(height)/2)); 
-       Circle::new(center, radius)
+       Circle::new(center, radius)}
+
+    }
+impl Cube {
+    pub fn new(p1: &Point, p2: &Point) -> Self {
+        let mut cube = Cube(Point(p1.0, p1.1, None), Point(p2.0, p2.1, None), None);
+        cube.color(None);
+        cube
+    }
+
+    pub fn random(width: i32, height: i32) -> Self {
+        Cube::new(&Point::random(width, height), &Point::random(width, height))
+    }
+}
+
+impl Drawable for Cube {
+    fn draw(&self, image: &mut Image) {
+        let color = self.2.as_ref().unwrap();
+        let mut first_rect = Rectangle::new(&self.0, &self.1);
+        first_rect.color(Some(color.clone()));
+        first_rect.draw(image);
+        let top_left = &first_rect.0;
+        let bottom_right = &first_rect.1;
+        let (top_right, bottom_left) = first_rect.other_point(&top_left, &bottom_right);
+        let m =  top_left.distance(&top_right).div(2.0) as i32;
+
+        let x = top_left.0 + m;
+        let y = top_left.1 + m;
+
+        let top_left1 = Point(x,y,None);
+        
+        let x1 = top_right.0+ m;
+        let y1 = bottom_right.1 +m;
+
+        let bottom_right1 = Point(x1,y1,None);
+        let mut second_rect = Rectangle::new(&top_left1, &bottom_right1);
+
+        second_rect.color(Some(color.clone()));
+        second_rect.draw(image);
+
+        let (top_right1, bottom_left1) = second_rect.other_point(&top_left1, &bottom_right1);
+
+
+       let mut line = Line::new(&top_left1, &top_left);
+       line.color(Some(color.clone()));
+       line.draw(image);
+
+       let mut line = Line::new(&bottom_left, &bottom_left1);
+       line.color(Some(color.clone()));
+       line.draw(image);
+
+       let mut line = Line::new(&top_right, &top_right1);
+       line.color(Some(color.clone()));
+       line.draw(image);
+
+       let mut line = Line::new(&bottom_right, &bottom_right1);
+       line.color(Some(color.clone()));
+       line.draw(image);
+
+
+    }
+    fn color(&mut self, color: Option<Color>) {
+        let mut rng = rand::thread_rng();
+        let range = Uniform::from(0..255);
+
+        let random_color = Color::rgb(rng.sample(range), rng.sample(range), rng.sample(range));
+        self.2 = color.or(Some(random_color));
     }
 }

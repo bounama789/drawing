@@ -1,4 +1,4 @@
-use rand::{distributions::Uniform, Rng};
+use rand::{distributions::Uniform, random, Rng};
 use raster::{Color, Image};
 
 pub struct Point(i32, i32);
@@ -58,7 +58,7 @@ impl Point {
 
 impl Drawable for Line {
     fn draw(&self, image: &mut Image) {
-
+    
 
         let Point(x1, y1) = self.0;
         let Point(x2, y2) = self.1;
@@ -100,8 +100,8 @@ impl Drawable for Line {
         let mut rng = rand::thread_rng();
         let range = Uniform::from(0..=255);
 
-        // Color::rgb(rng.sample(range), rng.sample(range), rng.sample(range))
-        Color::blue()
+        Color::rgb(rng.sample(range), rng.sample(range), rng.sample(range))
+        // Color::blue()
     }
 }
 
@@ -111,11 +111,77 @@ impl Drawable for Point {
     }
 
     fn color(&self) -> Color {
-        //todo implement the function
+        
         let mut rng = rand::thread_rng();
         let range = Uniform::from(0..255);
 
         Color::rgb(rng.sample(range), rng.sample(range), rng.sample(range))
+    }
+}
+impl Drawable for Circle {
+    fn color(&self) -> Color {
+        // let mut rng = rand::thread_rng();
+        // let range = Uniform::from(0..255);
+
+        Color::()
+    }
+
+    fn draw(&self, image: &mut Image) {
+        let Circle(Point(cx, cy), radius) = self;
+        let mut x = *radius;
+        let mut y = 0;
+        let mut err = 0;
+
+        while x >= y {
+            // Vérifie si les pixels sont à l'intérieur de l'image avant de les dessiner
+            if cx + x < image.width && cy + y < image.height {
+                image.set_pixel(cx + x, cy + y, self.color()).unwrap();
+            }
+            if cx + y < image.width && cy + x < image.height {
+                image.set_pixel(cx + y, cy + x, self.color()).unwrap();
+            }
+            if cx - y >= 0 && cy + x < image.height {
+                image.set_pixel(cx - y, cy + x, self.color()).unwrap();
+            }
+            if cx - x >= 0 && cy + y < image.height {
+                image.set_pixel(cx - x, cy + y, self.color()).unwrap();
+            }
+            if cx - x >= 0 && cy - y >= 0 {
+                image.set_pixel(cx - x, cy - y, self.color()).unwrap();
+            }
+            if cx - y >= 0 && cy - x >= 0 {
+                image.set_pixel(cx - y, cy - x, self.color()).unwrap();
+            }
+            if cx + y < image.width && cy - x >= 0 {
+                image.set_pixel(cx + y, cy - x, self.color()).unwrap();
+            }
+            if cx + x < image.width && cy - y >= 0 {
+                image.set_pixel(cx + x, cy - y, self.color()).unwrap();
+            }
+
+            y += 1;
+            err += 1 + 2*y;
+            if 2*(err - x) + 1 > 0 {
+                x -= 1;
+                err += 1 - 2*x;
+            }
+        }
+    }
+}
+impl Circle {
+    pub fn new(point : Point, radius: i32) -> Self {
+        Circle(point, radius)
+    }
+
+    pub fn random(width: i32, height: i32) -> Self {
+        let mut rng = rand::thread_rng();
+        let range_x = Uniform::from(0..width);
+        let range_y = Uniform::from(0..height);
+
+        // generate random value
+       let center =  Point::new(rng.sample(range_x), rng.sample(range_y));
+       let radius = rng.sample(Uniform::from(0..width.min(height)/2)); 
+       Circle(center, radius)
     }
 }
 impl Line {

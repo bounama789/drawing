@@ -21,17 +21,17 @@ fn main() {
     // );
     // triangle.draw(&mut image);
 
-    // for _ in 1..50 {
-    //     gs::Circle::random(image.width, image.height).draw(&mut image);
-    // }
-
-    raster::save(&image, "image.png");
-}
-
-impl Displayable for Image {
-    fn display(&mut self, x: i32, y: i32, color: Color) {
-        if x >= 0 && x < self.width && y >= 0 && y < self.height {
-            self.set_pixel(x, y, color).unwrap();
-        }
+    for _ in 1..50 {
+        gs::Circle::random(image.width, image.height).draw(&mut image);
     }
+
+    raster::save(&image, "helolo.png");
 }
+
+// impl Displayable for Image {
+//     fn display(&mut self, x: i32, y: i32, color: Color) {
+//         if x >= 0 && x < self.width && y >= 0 && y < self.height {
+//             self.set_pixel(x, y, color).unwrap();
+//         }
+//     }
+// }

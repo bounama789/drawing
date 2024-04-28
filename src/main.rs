@@ -14,6 +14,8 @@ fn main() {
     let rectangle = gs::Rectangle::new(&gs::Point::new(150, 150), &gs::Point::new(50, 50));
     rectangle.draw(&mut image);
 
+    gs::Rectangle::random(image.width, image.height).draw(&mut image);
+
     // let triangle = gs::Triangle::new (
     //         &gs::Point::new(500, 500),
     //         &gs::Point::new(250, 700),

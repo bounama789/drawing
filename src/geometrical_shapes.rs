@@ -1,3 +1,5 @@
+use std::ops::Div;
+
 use rand::{distributions::Uniform, Rng};
 use raster::{Color, Image};
 
@@ -6,10 +8,8 @@ pub struct Triangle(Point, Point, Point, Option<Color>);
 pub struct Line(Point, Point, Option<Color>);
 pub struct Rectangle(Point, Point, Option<Color>);
 pub struct Circle(Point, i32, Option<Color>);
-
-pub struct Pentagon {
-    pub side_length: f64,
-}
+pub struct Cube(Point, Point, Option<Color>);
+pub struct Pentagon(Point, Point, Point, Point, Point, Option<Color>);
 
 pub trait Displayable {
     fn display(&mut self, x: i32, y: i32, color: Color);
@@ -82,6 +82,11 @@ impl Point {
 
         // generate random value
         Point::new(rng.sample(range_x), rng.sample(range_y))
+    }
+
+    pub fn distance(&self, point: &Point) -> f64 {
+        let (dx, dy) = ((point.0 - self.0) as f64, (point.1 - self.1) as f64);
+        (dx * dx + dy * dy).sqrt()
     }
 }
 
@@ -166,6 +171,198 @@ impl Drawable for Line {
         self.2 = color.or(Some(random_color));
     }
 }
+impl Drawable for Circle {
+    fn color(&mut self, color: Option<Color>) {
+        let mut rng = rand::thread_rng();
+        let range = Uniform::from(0..255);
+
+        let random_color = Color::rgb(rng.sample(range), rng.sample(range), rng.sample(range));
+        self.2 = color.or(Some(random_color))
+    }
+
+    fn draw(&self, image: &mut Image) {
+        let Circle(Point(cx, cy, _), radius, _) = self;
+        let mut x = *radius;
+        let mut y = 0;
+        let mut err = 0;
+        let color = self.2.as_ref().unwrap();
+
+        while x >= y {
+            // Vérifie si les pixels sont à l'intérieur de l'image avant de les dessiner
+            if cx + x < image.width && cy + y < image.height {
+                image.set_pixel(cx + x, cy + y, color.clone()).unwrap();
+            }
+            if cx + y < image.width && cy + x < image.height {
+                image.set_pixel(cx + y, cy + x, color.clone()).unwrap();
+            }
+            if cx - y >= 0 && cy + x < image.height {
+                image.set_pixel(cx - y, cy + x, color.clone()).unwrap();
+            }
+            if cx - x >= 0 && cy + y < image.height {
+                image.set_pixel(cx - x, cy + y, color.clone()).unwrap();
+            }
+            if cx - x >= 0 && cy - y >= 0 {
+                image.set_pixel(cx - x, cy - y, color.clone()).unwrap();
+            }
+            if cx - y >= 0 && cy - x >= 0 {
+                image.set_pixel(cx - y, cy - x, color.clone()).unwrap();
+            }
+            if cx + y < image.width && cy - x >= 0 {
+                image.set_pixel(cx + y, cy - x, color.clone()).unwrap();
+            }
+            if cx + x < image.width && cy - y >= 0 {
+                image.set_pixel(cx + x, cy - y, color.clone()).unwrap();
+            }
+
+            y += 1;
+            err += 1 + 2 * y;
+            if 2 * (err - x) + 1 > 0 {
+                x -= 1;
+                err += 1 - 2 * x;
+            }
+        }
+    }
+}
+impl Circle {
+    pub fn new(point: Point, radius: i32) -> Self {
+        let mut c = Circle(point, radius, None);
+        c.color(None);
+        c
+    }
+
+    pub fn random(width: i32, height: i32) -> Self {
+        let mut rng = rand::thread_rng();
+        let range_x = Uniform::from(0..width);
+        let range_y = Uniform::from(0..height);
+
+        // generate random value
+        let center = Point::new(rng.sample(range_x), rng.sample(range_y));
+        let radius = rng.sample(Uniform::from(0..width.min(height) / 2));
+        Circle::new(center, radius)
+    }
+}
+impl Cube {
+    pub fn new(p1: &Point, p2: &Point) -> Self {
+        let mut cube = Cube(Point(p1.0, p1.1, None), Point(p2.0, p2.1, None), None);
+        cube.color(None);
+        cube
+    }
+
+    pub fn random(width: i32, height: i32) -> Self {
+        Cube::new(&Point::random(width, height), &Point::random(width, height))
+    }
+}
+
+impl Drawable for Cube {
+    fn draw(&self, image: &mut Image) {
+        let color = self.2.as_ref().unwrap();
+        let mut first_rect = Rectangle::new(&self.0, &self.1);
+        first_rect.color(Some(color.clone()));
+        first_rect.draw(image);
+        let top_left = &first_rect.0;
+        let bottom_right = &first_rect.1;
+        let (top_right, bottom_left) = first_rect.other_point(&top_left, &bottom_right);
+        let m = top_left.distance(&top_right).div(2.0) as i32;
+
+        let x = top_left.0 + m;
+        let y = top_left.1 + m;
+
+        let top_left1 = Point(x, y, None);
+
+        let x1 = top_right.0 + m;
+        let y1 = bottom_right.1 + m;
+
+        let bottom_right1 = Point(x1, y1, None);
+        let mut second_rect = Rectangle::new(&top_left1, &bottom_right1);
+
+        second_rect.color(Some(color.clone()));
+        second_rect.draw(image);
+
+        let (top_right1, bottom_left1) = second_rect.other_point(&top_left1, &bottom_right1);
+
+        let mut line = Line::new(&top_left1, &top_left);
+        line.color(Some(color.clone()));
+        line.draw(image);
+
+        let mut line = Line::new(&bottom_left, &bottom_left1);
+        line.color(Some(color.clone()));
+        line.draw(image);
+
+        let mut line = Line::new(&top_right, &top_right1);
+        line.color(Some(color.clone()));
+        line.draw(image);
+
+        let mut line = Line::new(&bottom_right, &bottom_right1);
+        line.color(Some(color.clone()));
+        line.draw(image);
+    }
+    fn color(&mut self, color: Option<Color>) {
+        let mut rng = rand::thread_rng();
+        let range = Uniform::from(0..255);
+
+        let random_color = Color::rgb(rng.sample(range), rng.sample(range), rng.sample(range));
+        self.2 = color.or(Some(random_color));
+    }
+}
+
+impl Pentagon {
+    pub fn new(p1: &Point, p2: &Point, p3: &Point, p4: &Point, p5: &Point) -> Self {
+        let mut pentagon = Pentagon(
+            Point(p1.0, p1.1, None),
+            Point(p2.0, p2.1, None),
+            Point(p3.0, p3.1, None),
+            Point(p4.0, p4.1, None),
+            Point(p5.0, p5.1, None),
+            None,
+        );
+        pentagon.color(None);
+        pentagon
+    }
+
+    pub fn random(width: i32, height: i32) -> Self {
+        Pentagon::new(
+            &Point::random(width, height),
+            &Point::random(width, height),
+            &Point::random(width, height),
+            &Point::random(width, height),
+            &Point::random(width, height),
+        )
+    }
+}
+
+impl Drawable for Pentagon {
+    fn draw(&self, image: &mut Image) {
+        let color = self.5.as_ref().unwrap();
+        let mut line = Line::new(&self.0, &self.1);
+        line.color(Some(color.clone()));
+        line.draw(image);
+
+        let mut line = Line::new(&self.1, &self.2);
+        line.color(Some(color.clone()));
+        line.draw(image);
+
+        let mut line = Line::new(&self.2, &self.3);
+        line.color(Some(color.clone()));
+        line.draw(image);
+
+        let mut line = Line::new(&self.3, &self.4);
+        line.color(Some(color.clone()));
+        line.draw(image);
+
+        let mut line = Line::new(&self.4, &self.0);
+        line.color(Some(color.clone()));
+        line.draw(image);
+    }
+
+    fn color(&mut self, color: Option<Color>) {
+        let mut rng = rand::thread_rng();
+        let range = Uniform::from(0..255);
+
+        let random_color = Color::rgb(rng.sample(range), rng.sample(range), rng.sample(range));
+        self.5 = color.or(Some(random_color));
+    }
+}
+
 
 impl Triangle {
     // Constructor method to create a new triangle
@@ -213,30 +410,5 @@ impl Drawable for Triangle {
     }
 }
 
-// impl Pentagon {
-//     // Constructor method to create a new pentagon
-//     pub fn new(side_length: f64) -> Self {
-//         Pentagon { side_length }
-//     }
 
-//     // Method to draw the pentagon on the given image
-//     pub fn draw_pentagon(&self, img: &mut Image, x: i32, y: i32) {
-//         // Define the coordinates for the vertices of the pentagon
-//         let vertices = [
-//             (x as f64, y as f64),
-//             ((x + self.side_length as i32) as f64, y as f64),
-//             ((x + (self.side_length as f64 * 0.5) as i32) as f64, (y - (self.side_length as f64 * 0.5 * (5.0_f64.sqrt() - 1.0)).round() as i32) as f64),
-//             ((x - (self.side_length as f64 * 0.5) as i32) as f64, (y - (self.side_length as f64 * 0.5 * (5.0_f64.sqrt() - 1.0)).round() as i32) as f64),
-//             ((x - (self.side_length as f64) as i32) as f64, y as f64),
-//         ];
-
-//         // Draw lines between the vertices to form the pentagon
-//         for i in 0..vertices.len() {
-//             let next_index = (i + 1) % vertices.len();
-//             let start = vertices[i];
-//             let end = vertices[next_index];
-//             img.line(start.0 as i32, start.1 as i32, end.0 as i32, end.1 as i32, Color::black());
-//         }
-//     }
-// }
 

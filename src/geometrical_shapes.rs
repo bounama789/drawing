@@ -7,6 +7,10 @@ pub struct Line(Point, Point, Option<Color>);
 pub struct Rectangle(Point, Point, Option<Color>);
 pub struct Circle(Point, i32, Option<Color>);
 
+pub struct Pentagon {
+    pub side_length: f64,
+}
+
 pub trait Displayable {
     fn display(&mut self, x: i32, y: i32, color: Color);
 }
@@ -162,3 +166,77 @@ impl Drawable for Line {
         self.2 = color.or(Some(random_color));
     }
 }
+
+impl Triangle {
+    // Constructor method to create a new triangle
+    pub fn new(p1: &Point, p2: &Point, p3: &Point,  color: Option<Color>) -> Self {
+        Triangle(Point(p1.0, p1.1, None), Point(p2.0, p2.1, None), Point(p3.0, p3.1, None), color)
+    }
+
+    // Method to generate a random triangle within the given width and height
+    pub fn random(width: i32, height: i32, color: Option<Color>) -> Self {
+        Triangle::new(&Point::random(width, height), &Point::random(width, height), &Point::random(width, height), color)
+    }
+}
+
+impl Drawable for Triangle {
+    fn draw(&self, image: &mut Image) {
+        let color = match &self.3 {
+        Some(c) => c.clone(),
+        None => {
+            let mut rng = rand::thread_rng();
+            let range = Uniform::from(0..255);
+            Color::rgb(rng.sample(range), rng.sample(range), rng.sample(range))
+            }
+        };
+
+
+        let p1 = &self.0;
+        let p2 = &self.1;
+        let p3 = &self.2;
+
+        let mut line = Line::new(&p1, &p2);
+        line.color(Some(color.clone()));
+        line.draw(image);
+
+        let mut line = Line::new(&p2, &p3);
+        line.color(Some(color.clone()));
+        line.draw(image);
+
+        let mut line = Line::new(&p3, &p1);
+        line.color(Some(color.clone()));
+        line.draw(image);
+    }
+
+     fn color(&mut self, color: Option<Color>) {
+        self.3 = color;
+    }
+}
+
+// impl Pentagon {
+//     // Constructor method to create a new pentagon
+//     pub fn new(side_length: f64) -> Self {
+//         Pentagon { side_length }
+//     }
+
+//     // Method to draw the pentagon on the given image
+//     pub fn draw_pentagon(&self, img: &mut Image, x: i32, y: i32) {
+//         // Define the coordinates for the vertices of the pentagon
+//         let vertices = [
+//             (x as f64, y as f64),
+//             ((x + self.side_length as i32) as f64, y as f64),
+//             ((x + (self.side_length as f64 * 0.5) as i32) as f64, (y - (self.side_length as f64 * 0.5 * (5.0_f64.sqrt() - 1.0)).round() as i32) as f64),
+//             ((x - (self.side_length as f64 * 0.5) as i32) as f64, (y - (self.side_length as f64 * 0.5 * (5.0_f64.sqrt() - 1.0)).round() as i32) as f64),
+//             ((x - (self.side_length as f64) as i32) as f64, y as f64),
+//         ];
+
+//         // Draw lines between the vertices to form the pentagon
+//         for i in 0..vertices.len() {
+//             let next_index = (i + 1) % vertices.len();
+//             let start = vertices[i];
+//             let end = vertices[next_index];
+//             img.line(start.0 as i32, start.1 as i32, end.0 as i32, end.1 as i32, Color::black());
+//         }
+//     }
+// }
+

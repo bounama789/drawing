@@ -16,12 +16,22 @@ fn main() {
 
     gs::Rectangle::random(image.width, image.height).draw(&mut image);
 
-    // let triangle = gs::Triangle::new (
-    //         &gs::Point::new(500, 500),
-    //         &gs::Point::new(250, 700),
-    //         &gs::Point::new(700, 800),
-    // );
-    // triangle.draw(&mut image);
+    // Create a pentagon with side length 200
+    // let pentagon = Pentagon::new(200.0);
+
+    // Draw the pentagon at position (150, 250)
+    // pentagon.draw_pentagon(&mut image, 150, 250);
+
+    let triangle = gs::Triangle::new (
+            &gs::Point::new(500, 500),
+            &gs::Point::new(250, 700),
+            &gs::Point::new(700, 800),
+            None,
+    );
+    triangle.draw(&mut image);
+
+    gs::Triangle::random(image.width, image.height, None).draw(&mut image);
+
 
     // for _ in 1..50 {
     //     gs::Circle::random(image.width, image.height).draw(&mut image);

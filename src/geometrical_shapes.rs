@@ -363,16 +363,15 @@ impl Drawable for Pentagon {
     }
 }
 
-
 impl Triangle {
     // Constructor method to create a new triangle
-    pub fn new(p1: &Point, p2: &Point, p3: &Point,  color: Option<Color>) -> Self {
-        Triangle(Point(p1.0, p1.1, None), Point(p2.0, p2.1, None), Point(p3.0, p3.1, None), color)
+    pub fn new(p1: &Point, p2: &Point, p3: &Point) -> Self {
+        Triangle(Point(p1.0, p1.1, None), Point(p2.0, p2.1, None), Point(p3.0, p3.1, None), None)
     }
 
     // Method to generate a random triangle within the given width and height
-    pub fn random(width: i32, height: i32, color: Option<Color>) -> Self {
-        Triangle::new(&Point::random(width, height), &Point::random(width, height), &Point::random(width, height), color)
+    pub fn random(width: i32, height: i32) -> Self {
+        Triangle::new(&Point::random(width, height), &Point::random(width, height), &Point::random(width, height))
     }
 }
 

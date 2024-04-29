@@ -31,11 +31,10 @@ fn main() {
             &gs::Point::new(500, 500),
             &gs::Point::new(250, 700),
             &gs::Point::new(700, 800),
-            None,
     );
     triangle.draw(&mut image);
 
-    gs::Triangle::random(image.width, image.height, None).draw(&mut image);
+    gs::Triangle::random(image.width, image.height).draw(&mut image);
 
 
     for _ in 1..3 {

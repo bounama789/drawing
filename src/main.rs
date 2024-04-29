@@ -14,19 +14,6 @@ fn main() {
     let rectangle = gs::Rectangle::new(&gs::Point::new(150, 150), &gs::Point::new(50, 50));
     rectangle.draw(&mut image);
 
-    let rectangle = gs::Rectangle::new(&gs::Point::new(150, 950), &gs::Point::new(50, 1030));
-    rectangle.draw(&mut image);
-
-    gs::Rectangle::random(image.width, image.height).draw(&mut image);
-    gs::Cube::random(image.width, image.height).draw(&mut image);
-    gs::Pentagon::random(image.width, image.height).draw(&mut image);
-
-    // Create a pentagon with side length 200
-    // let pentagon = Pentagon::new(200.0);
-
-    // Draw the pentagon at position (150, 250)
-    // pentagon.draw_pentagon(&mut image, 150, 250);
-
     let triangle = gs::Triangle::new (
             &gs::Point::new(500, 500),
             &gs::Point::new(250, 700),
@@ -34,12 +21,15 @@ fn main() {
     );
     triangle.draw(&mut image);
 
-    gs::Triangle::random(image.width, image.height).draw(&mut image);
-
-
-    for _ in 1..3 {
+    for _ in 1..50 {
         gs::Circle::random(image.width, image.height).draw(&mut image);
     }
+
+    gs::Cube::random(image.width, image.height).draw(&mut image);
+    gs::Pentagon::random(image.width, image.height).draw(&mut image);
+    gs::Triangle::random(image.width, image.height).draw(&mut image);
+    gs::Rectangle::random(image.width, image.height).draw(&mut image);
+
 
     raster::save(&image, "image.png");
 }

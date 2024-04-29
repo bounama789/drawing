@@ -171,6 +171,7 @@ impl Drawable for Line {
         self.2 = color.or(Some(random_color));
     }
 }
+
 impl Drawable for Circle {
     fn color(&mut self, color: Option<Color>) {
         let mut rng = rand::thread_rng();
@@ -223,6 +224,7 @@ impl Drawable for Circle {
         }
     }
 }
+
 impl Circle {
     pub fn new(point: Point, radius: i32) -> Self {
         let mut c = Circle(point, radius, None);
@@ -241,6 +243,7 @@ impl Circle {
         Circle::new(center, radius)
     }
 }
+
 impl Cube {
     pub fn new(p1: &Point, p2: &Point) -> Self {
         let mut cube = Cube(Point(p1.0, p1.1, None), Point(p2.0, p2.1, None), None);
@@ -296,6 +299,7 @@ impl Drawable for Cube {
         line.color(Some(color.clone()));
         line.draw(image);
     }
+
     fn color(&mut self, color: Option<Color>) {
         let mut rng = rand::thread_rng();
         let range = Uniform::from(0..255);
@@ -366,26 +370,34 @@ impl Drawable for Pentagon {
 impl Triangle {
     // Constructor method to create a new triangle
     pub fn new(p1: &Point, p2: &Point, p3: &Point) -> Self {
-        Triangle(Point(p1.0, p1.1, None), Point(p2.0, p2.1, None), Point(p3.0, p3.1, None), None)
+        Triangle(
+            Point(p1.0, p1.1, None),
+            Point(p2.0, p2.1, None),
+            Point(p3.0, p3.1, None),
+            None,
+        )
     }
 
     // Method to generate a random triangle within the given width and height
     pub fn random(width: i32, height: i32) -> Self {
-        Triangle::new(&Point::random(width, height), &Point::random(width, height), &Point::random(width, height))
+        Triangle::new(
+            &Point::random(width, height),
+            &Point::random(width, height),
+            &Point::random(width, height),
+        )
     }
 }
 
 impl Drawable for Triangle {
     fn draw(&self, image: &mut Image) {
         let color = match &self.3 {
-        Some(c) => c.clone(),
-        None => {
-            let mut rng = rand::thread_rng();
-            let range = Uniform::from(0..255);
-            Color::rgb(rng.sample(range), rng.sample(range), rng.sample(range))
+            Some(c) => c.clone(),
+            None => {
+                let mut rng = rand::thread_rng();
+                let range = Uniform::from(0..255);
+                Color::rgb(rng.sample(range), rng.sample(range), rng.sample(range))
             }
         };
-
 
         let p1 = &self.0;
         let p2 = &self.1;
@@ -404,10 +416,7 @@ impl Drawable for Triangle {
         line.draw(image);
     }
 
-     fn color(&mut self, color: Option<Color>) {
+    fn color(&mut self, color: Option<Color>) {
         self.3 = color;
     }
 }
-
-
-

@@ -11,14 +11,15 @@ fn main() {
 
     gs::Point::random(image.width, image.height).draw(&mut image);
 
-    // let rectangle = gs::Rectangle::new(&gs::Point::new(150, 150), &gs::Point::new(50, 50));
-    // rectangle.draw(&mut image);
+    let rectangle = gs::Rectangle::new(&gs::Point::new(150, 150), &gs::Point::new(50, 50));
+    rectangle.draw(&mut image);
 
-    // let rectangle = gs::Rectangle::new(&gs::Point::new(150, 950), &gs::Point::new(50, 1030));
-    // rectangle.draw(&mut image);
+    let rectangle = gs::Rectangle::new(&gs::Point::new(150, 950), &gs::Point::new(50, 1030));
+    rectangle.draw(&mut image);
 
     gs::Rectangle::random(image.width, image.height).draw(&mut image);
     gs::Cube::random(image.width, image.height).draw(&mut image);
+    gs::Pentagon::random(image.width, image.height).draw(&mut image);
 
     // let triangle = gs::Triangle::new (
     //         &gs::Point::new(500, 500),

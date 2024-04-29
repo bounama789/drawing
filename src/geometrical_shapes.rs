@@ -8,8 +8,8 @@ pub struct Triangle(Point, Point, Point, Option<Color>);
 pub struct Line(Point, Point, Option<Color>);
 pub struct Rectangle(Point, Point, Option<Color>);
 pub struct Circle(Point, i32, Option<Color>);
-
-pub struct Cube(Point,Point,Option<Color>);
+pub struct Cube(Point, Point, Option<Color>);
+pub struct Pentagon(Point, Point, Point, Point, Point, Option<Color>);
 
 pub trait Displayable {
     fn display(&mut self, x: i32, y: i32, color: Color);
@@ -85,7 +85,7 @@ impl Point {
     }
 
     pub fn distance(&self, point: &Point) -> f64 {
-        let (dx, dy) = ((point.0 - self.0)as f64, (point.1 - self.1)as f64);
+        let (dx, dy) = ((point.0 - self.0) as f64, (point.1 - self.1) as f64);
         (dx * dx + dy * dy).sqrt()
     }
 }
@@ -172,7 +172,7 @@ impl Drawable for Line {
     }
 }
 impl Drawable for Circle {
-    fn color(&mut self, color: Option<Color>)  {
+    fn color(&mut self, color: Option<Color>) {
         let mut rng = rand::thread_rng();
         let range = Uniform::from(0..255);
 
@@ -181,7 +181,7 @@ impl Drawable for Circle {
     }
 
     fn draw(&self, image: &mut Image) {
-        let Circle(Point(cx, cy,_), radius, _) = self;
+        let Circle(Point(cx, cy, _), radius, _) = self;
         let mut x = *radius;
         let mut y = 0;
         let mut err = 0;
@@ -215,17 +215,17 @@ impl Drawable for Circle {
             }
 
             y += 1;
-            err += 1 + 2*y;
-            if 2*(err - x) + 1 > 0 {
+            err += 1 + 2 * y;
+            if 2 * (err - x) + 1 > 0 {
                 x -= 1;
-                err += 1 - 2*x;
+                err += 1 - 2 * x;
             }
         }
     }
 }
 impl Circle {
-    pub fn new(point : Point, radius: i32) -> Self {
-        let mut  c = Circle(point, radius, None);
+    pub fn new(point: Point, radius: i32) -> Self {
+        let mut c = Circle(point, radius, None);
         c.color(None);
         c
     }
@@ -236,11 +236,11 @@ impl Circle {
         let range_y = Uniform::from(0..height);
 
         // generate random value
-       let center =  Point::new(rng.sample(range_x), rng.sample(range_y));
-       let radius = rng.sample(Uniform::from(0..width.min(height)/2)); 
-       Circle::new(center, radius)}
-
+        let center = Point::new(rng.sample(range_x), rng.sample(range_y));
+        let radius = rng.sample(Uniform::from(0..width.min(height) / 2));
+        Circle::new(center, radius)
     }
+}
 impl Cube {
     pub fn new(p1: &Point, p2: &Point) -> Self {
         let mut cube = Cube(Point(p1.0, p1.1, None), Point(p2.0, p2.1, None), None);
@@ -262,17 +262,17 @@ impl Drawable for Cube {
         let top_left = &first_rect.0;
         let bottom_right = &first_rect.1;
         let (top_right, bottom_left) = first_rect.other_point(&top_left, &bottom_right);
-        let m =  top_left.distance(&top_right).div(2.0) as i32;
+        let m = top_left.distance(&top_right).div(2.0) as i32;
 
         let x = top_left.0 + m;
         let y = top_left.1 + m;
 
-        let top_left1 = Point(x,y,None);
-        
-        let x1 = top_right.0+ m;
-        let y1 = bottom_right.1 +m;
+        let top_left1 = Point(x, y, None);
 
-        let bottom_right1 = Point(x1,y1,None);
+        let x1 = top_right.0 + m;
+        let y1 = bottom_right.1 + m;
+
+        let bottom_right1 = Point(x1, y1, None);
         let mut second_rect = Rectangle::new(&top_left1, &bottom_right1);
 
         second_rect.color(Some(color.clone()));
@@ -280,24 +280,21 @@ impl Drawable for Cube {
 
         let (top_right1, bottom_left1) = second_rect.other_point(&top_left1, &bottom_right1);
 
+        let mut line = Line::new(&top_left1, &top_left);
+        line.color(Some(color.clone()));
+        line.draw(image);
 
-       let mut line = Line::new(&top_left1, &top_left);
-       line.color(Some(color.clone()));
-       line.draw(image);
+        let mut line = Line::new(&bottom_left, &bottom_left1);
+        line.color(Some(color.clone()));
+        line.draw(image);
 
-       let mut line = Line::new(&bottom_left, &bottom_left1);
-       line.color(Some(color.clone()));
-       line.draw(image);
+        let mut line = Line::new(&top_right, &top_right1);
+        line.color(Some(color.clone()));
+        line.draw(image);
 
-       let mut line = Line::new(&top_right, &top_right1);
-       line.color(Some(color.clone()));
-       line.draw(image);
-
-       let mut line = Line::new(&bottom_right, &bottom_right1);
-       line.color(Some(color.clone()));
-       line.draw(image);
-
-
+        let mut line = Line::new(&bottom_right, &bottom_right1);
+        line.color(Some(color.clone()));
+        line.draw(image);
     }
     fn color(&mut self, color: Option<Color>) {
         let mut rng = rand::thread_rng();
@@ -305,5 +302,63 @@ impl Drawable for Cube {
 
         let random_color = Color::rgb(rng.sample(range), rng.sample(range), rng.sample(range));
         self.2 = color.or(Some(random_color));
+    }
+}
+
+impl Pentagon {
+    pub fn new(p1: &Point, p2: &Point, p3: &Point, p4: &Point, p5: &Point) -> Self {
+        let mut pentagon = Pentagon(
+            Point(p1.0, p1.1, None),
+            Point(p2.0, p2.1, None),
+            Point(p3.0, p3.1, None),
+            Point(p4.0, p4.1, None),
+            Point(p5.0, p5.1, None),
+            None,
+        );
+        pentagon.color(None);
+        pentagon
+    }
+
+    pub fn random(width: i32, height: i32) -> Self {
+        Pentagon::new(
+            &Point::random(width, height),
+            &Point::random(width, height),
+            &Point::random(width, height),
+            &Point::random(width, height),
+            &Point::random(width, height),
+        )
+    }
+}
+
+impl Drawable for Pentagon {
+    fn draw(&self, image: &mut Image) {
+        let color = self.5.as_ref().unwrap();
+        let mut line = Line::new(&self.0, &self.1);
+        line.color(Some(color.clone()));
+        line.draw(image);
+
+        let mut line = Line::new(&self.1, &self.2);
+        line.color(Some(color.clone()));
+        line.draw(image);
+
+        let mut line = Line::new(&self.2, &self.3);
+        line.color(Some(color.clone()));
+        line.draw(image);
+
+        let mut line = Line::new(&self.3, &self.4);
+        line.color(Some(color.clone()));
+        line.draw(image);
+
+        let mut line = Line::new(&self.4, &self.0);
+        line.color(Some(color.clone()));
+        line.draw(image);
+    }
+
+    fn color(&mut self, color: Option<Color>) {
+        let mut rng = rand::thread_rng();
+        let range = Uniform::from(0..255);
+
+        let random_color = Color::rgb(rng.sample(range), rng.sample(range), rng.sample(range));
+        self.5 = color.or(Some(random_color));
     }
 }
